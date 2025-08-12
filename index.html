@@ -1,477 +1,64 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>دوري أبطال الأسئلة — النسخة المُحسّنة</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{--glass:rgba(255,255,255,0.04)}
-    body{background:linear-gradient(180deg,#04151a 0%,#063237 100%);font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
-    .glass{background:var(--glass);backdrop-filter: blur(6px);}
-    .card{box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-    .option{transition: all .12s ease; user-select:none}
-    .option:hover:not(.disabled){transform:translateY(-4px);}
-    .correct{background:#16a34a!important;color:white!important}
-    .wrong{background:#dc2626!important;color:white!important}
-    .disabled{pointer-events:none;opacity:.9}
-    .timer-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);width:0;transition:width .25s linear}
-    .shake{animation:shake .45s}
-    @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-    .pulse{animation:pulse 1s infinite}
-    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-    .badge{background:linear-gradient(90deg,#06b6d4,#3b82f6);padding:.18rem .5rem;border-radius:.5rem;font-weight:600}
-    /* small helpers */
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة أسئلة كرة القدم</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 text-white">
-  <div class="w-full max-w-5xl">
-    <header class="mb-6 text-center">
-      <h1 class="text-4xl font-extrabold flex items-center justify-center gap-3">⚽ <span id="appTitle">دوري أبطال الأسئلة</span></h1>
-      <p id="appSubtitle" class="text-sm mt-2 opacity-80">موسم الأسئلة — تحدى أصدقائك وطور مهاراتك</p>
-    </header><main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- لوحة اللعبة -->
-  <section class="lg:col-span-2 card glass p-5 rounded-2xl">
-    <div class="flex justify-between items-start gap-4 mb-3">
-      <div>
-        <div class="text-xs opacity-80"> <span id="labelQuestion">السؤال</span> <span id="current">1</span>/<span id="total">50</span></div>
-        <div id="question" class="mt-2 text-xl font-semibold">تحميل السؤال...</div>
-      </div>
+<body>
+    <div class="app">
 
-      <div class="text-right">
-        <div class="flex items-center gap-3">
-          <div class="text-sm"> <span id="labelScore">النقاط</span>: <span id="score">0</span></div>
-          <div class="text-sm"> <span id="labelBest">أفضل</span>: <span id="best">0</span></div>
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen">
+            <h1>اختبر معلوماتك الكروية</h1>
+            <p>هل أنت مستعد لتحدي من 5 مراحل؟</p>
+            <button id="start-btn" class="control-btn">ابدأ اللعب</button>
         </div>
-        <div class="mt-3 flex items-center gap-2">
-          <div id="lives" class="text-lg">❤️❤️❤️</div>
-          <div class="text-xs opacity-80"> <span id="labelStage">المرحلة</span>: <span id="stage">المجموعات</span></div>
+
+        <!-- شاشة اللعب الرئيسية -->
+        <div id="quiz-screen" class="screen hide">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <div id="level-name">المرحلة الأولى</div>
+                    <div id="timer-container">
+                        <svg class="timer-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <g class="timer-circle">
+                                <circle class="timer-background" r="45" cx="50" cy="50"></circle>
+                                <path id="timer-path-remaining" stroke-dasharray="283" class="timer-path-remaining" d="M 50, 50 m -45, 0 a 45,45 0 1,0 90,0 a 45,45 0 1,0 -90,0"></path>
+                            </g>
+                        </svg>
+                        <span id="timer-label" class="timer-label">5</span>
+                    </div>
+                    <div id="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <div id="question-counter"></div>
+                    <h2 id="question">سيظهر السؤال هنا</h2>
+                </div>
+                <div id="answer-buttons" class="btn-grid"></div>
+                <button id="next-btn" class="hide">التالي</button>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <div id="questionCard" class="rounded-xl p-4 border border-white/6 mb-4 min-h-[120px]">
-      <!-- Question content placed here -->
-    </div>
-
-    <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4" role="listbox" aria-label="خيارات"></div>
-
-    <div class="flex items-center gap-4 mb-4">
-      <div class="flex-1">
-        <div class="h-3 bg-white/6 rounded overflow-hidden">
-          <div id="timerFill" class="timer-fill"></div>
+        <!-- شاشة الخسارة -->
+        <div id="lose-screen" class="screen hide">
+            <h1>للأسف، لقد خسرت!</h1>
+            <p>لم تتمكن من تحقيق 6 إجابات صحيحة. حظ أوفر في المرة القادمة.</p>
+            <button id="try-again-btn" class="control-btn">حاول مجدداً</button>
         </div>
-        <div class="text-xs opacity-80 mt-2">الوقت المتبقي: <span id="timerText">15</span> ثانية</div>
-      </div>
-
-      <div class="flex gap-2">
-        <button id="hintBtn" class="px-3 py-2 rounded bg-yellow-500 text-black hover:scale-105">تلميح (50/50)</button>
-        <button id="pauseBtn" class="px-3 py-2 rounded bg-white/10">إيقاف/استئناف</button>
-      </div>
-    </div>
-
-    <div class="flex justify-between items-center">
-      <div class="w-3/4">
-        <div class="h-3 bg-white/10 rounded">
-          <div id="progressBar" class="h-3 bg-green-500 rounded w-0"></div>
+        
+        <!-- شاشة الفوز -->
+        <div id="win-screen" class="screen hide">
+            <h1>🏆 تهانينا! 🏆</h1>
+            <p>لقد أكملت جميع المراحل بنجاح وأثبت أنك خبير كروي حقيقي!</p>
+            <button id="play-again-btn" class="control-btn">إلعب مرة أخرى</button>
         </div>
-      </div>
 
-      <div class="text-sm opacity-80">سلسلة صحيحة: <span id="streak">0</span></div>
     </div>
-
-    <div class="mt-4 flex gap-2 justify-center">
-      <button id="nextBtn" class="px-4 py-2 bg-white/10 rounded disabled:opacity-60" disabled>التالي</button>
-      <button id="restartBtn" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">إعادة</button>
-      <button id="downloadBtn" class="px-4 py-2 bg-green-600 rounded hover:bg-green-700">تحميل</button>
-    </div>
-
-    <div id="resultArea" class="mt-4 text-center text-sm opacity-80"></div>
-  </section>
-
-  <!-- لوحة الضبط و الإحصائيات -->
-  <aside class="card glass p-5 rounded-2xl">
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex gap-2">
-        <button id="langAr" class="px-3 py-1 rounded bg-green-600">العربية</button>
-        <button id="langEn" class="px-3 py-1 rounded bg-gray-600">English</button>
-      </div>
-
-      <div class="text-xs opacity-80">وضع اللعب:</div>
-    </div>
-
-    <div class="mb-4">
-      <select id="modeSelect" class="w-full p-2 rounded bg-white/5">
-        <option value="challenge">تحدي</option>
-        <option value="training">تدريب</option>
-      </select>
-    </div>
-
-    <div class="mb-4">
-      <label class="text-xs opacity-80">الصعوبة</label>
-      <select id="difficulty" class="w-full p-2 rounded bg-white/5">
-        <option value="all">متنوع</option>
-        <option value="easy">سهل</option>
-        <option value="medium">متوسط</option>
-        <option value="hard">صعب</option>
-      </select>
-    </div>
-
-    <div class="mb-4">
-      <button id="importBtn" class="w-full py-2 rounded bg-indigo-600">استيراد أسئلة (JSON)</button>
-    </div>
-
-    <div class="mb-4">
-      <div class="text-sm font-semibold mb-2">الإحصائيات</div>
-      <div class="text-xs opacity-80">ألعاب مكتملة: <span id="statsCompleted">0</span></div>
-      <div class="text-xs opacity-80">متوسط النقاط: <span id="statsAvg">0</span></div>
-      <div class="text-xs opacity-80">أطول سلسلة صحيحة: <span id="statsBestStreak">0</span></div>
-    </div>
-
-    <div class="mb-4">
-      <div class="text-sm font-semibold mb-2">الجوائز</div>
-      <div id="badges" class="flex gap-2 flex-wrap"></div>
-    </div>
-
-    <div class="mt-6 text-xs opacity-70">يمكنك تحميل صفحة اللعبة واحدة وتشغيلها محلياً أو رفعها إلى GitHub Pages.</div>
-  </aside>
-</main>
-
-<footer class="mt-6 text-center text-xs opacity-60">هل تريد تكاملاً مع Firebase/Backend؟ أخبرني لأرشدك.</footer>
-
-  </div><script>
-/* ===== لعبة أسئلة — النسخة المُحسّنة =====
-   الميزات المدمجة:
-   - أسلوب حديث (Tailwind) واستجابة للهواتف
-   - دعم العربية/الإنجليزية
-   - أنماط: تحدي / تدريب
-   - صعوبات: سهل/متوسط/صعب
-   - تلميح 50/50
-   - حفظ إحصائيات وتقدّم في localStorage
-   - تحميل/استيراد أسئلة بصيغة JSON
-   - تأثيرات صوتية وبصرية
-   - تنزيل ملف HTML
-*/
-
-// --------- إعدادات عامة ---------
-const TIME_PER_QUESTION = 15; // ثانية (في وضع التدريب يمكن أن يكون أطول)
-const AUTO_NEXT_DELAY = 1000; // مللي ثانية
-const POINTS = { easy: 5, medium: 10, hard: 20 };
-const START_LIVES = 3;
-
-// --------- عناصر DOM ---------
-const totalEl = document.getElementById('total');
-const currentEl = document.getElementById('current');
-const scoreEl = document.getElementById('score');
-const bestEl = document.getElementById('best');
-const questionEl = document.getElementById('question');
-const optionsEl = document.getElementById('options');
-const progressBar = document.getElementById('progressBar');
-const stageEl = document.getElementById('stage');
-const stageBanner = document.getElementById('stage');
-const nextBtn = document.getElementById('nextBtn');
-const restartBtn = document.getElementById('restartBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const timerFill = document.getElementById('timerFill');
-const timerText = document.getElementById('timerText');
-const livesEl = document.getElementById('lives');
-const hintBtn = document.getElementById('hintBtn');
-const modeSelect = document.getElementById('modeSelect');
-const difficultySelect = document.getElementById('difficulty');
-const langArBtn = document.getElementById('langAr');
-const langEnBtn = document.getElementById('langEn');
-const pauseBtn = document.getElementById('pauseBtn');
-const streakEl = document.getElementById('streak');
-const statsCompletedEl = document.getElementById('statsCompleted');
-const statsAvgEl = document.getElementById('statsAvg');
-const statsBestStreakEl = document.getElementById('statsBestStreak');
-const badgesEl = document.getElementById('badges');
-const importBtn = document.getElementById('importBtn');
-const resultArea = document.getElementById('resultArea');
-
-// --------- WebAudio for simple sounds ---------
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function beep(freq=440, t=0.12, type='sine'){
-  try{
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type; o.frequency.value = freq; o.connect(g); g.connect(audioCtx.destination);
-    g.gain.value = 0.0001; const now = audioCtx.currentTime;
-    g.gain.exponentialRampToValueAtTime(0.18, now + 0.01);
-    o.start(now); g.gain.exponentialRampToValueAtTime(0.0001, now + t);
-    o.stop(now + t + 0.02);
-  }catch(e){}
-}
-function correctSound(){ beep(880,0.12,'sine'); beep(660,0.09,'sine'); }
-function wrongSound(){ beep(220,0.18,'sawtooth'); }
-
-// --------- حالة اللعبة ---------
-let QUESTIONS = []; // سيتم تعبئتها بالأسئلة المدمجة
-let pool = []; // الأسئلة المفلترة حسب إعدادات
-let current = 0;
-let score = 0;
-let lives = START_LIVES;
-let timer = null;
-let timeLeft = TIME_PER_QUESTION;
-let streak = 0;
-let bestStreakSession = 0;
-let usedHintThisQuestion = false;
-let language = 'ar';
-let mode = 'challenge';
-let difficultyFilter = 'all';
-
-// --------- إحصائيات محفوظة ---------
-const STORAGE_KEY = 'football_quiz_v2';
-function loadStorage(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }catch(e){return {}} }
-function saveStorage(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-let storage = loadStorage();
-if(!storage.stats) storage.stats = { completed:0, avgScore:0, bestStreak:0, games:[] };
-if(!storage.settings) storage.settings = { best:0 };
-
-// --------- أسئلة مضمّنة (مثال واسع - 60 سؤالًا) ---------
-// كل سؤال: { id, difficulty: 'easy'|'medium'|'hard', q:{ar,en}, options:[{ar,en},...], correct: index }
-QUESTIONS = [
-  {id:1,difficulty:'easy', q:{ar:'كم عدد اللاعبين في كل فريق داخل الملعب في كرة القدم؟', en:'How many players does each football team have on the pitch?'}, options:[{ar:'9',en:'9'},{ar:'10',en:'10'},{ar:'11',en:'11'},{ar:'12',en:'12'}], correct:2},
-  {id:2,difficulty:'easy', q:{ar:'كم مدة كل شوط في مباراة كرة القدم الرسمية؟', en:'How long is each half in a standard football match?'}, options:[{ar:'30 دقيقة',en:'30 minutes'},{ar:'35 دقيقة',en:'35 minutes'},{ar:'45 دقيقة',en:'45 minutes'},{ar:'60 دقيقة',en:'60 minutes'}], correct:2},
-  {id:3,difficulty:'easy', q:{ar:'من هو اللاعب الذي يُرتبط غالباً بالرقم 10 في كرة القدم؟', en:'Which shirt number is often associated with the playmaker in football?'}, options:[{ar:'7',en:'7'},{ar:'9',en:'9'},{ar:'10',en:'10'},{ar:'11',en:'11'}], correct:2},
-  {id:4,difficulty:'easy', q:{ar:'ما المسافة من نقطة ركلة الجزاء إلى المرمى؟', en:'What is the distance from the penalty spot to the goal line?'}, options:[{ar:'9 أمتار',en:'9 metres'},{ar:'10 أمتار',en:'10 metres'},{ar:'11 متراً',en:'11 metres'},{ar:'12 متراً',en:'12 metres'}], correct:2},
-  {id:5,difficulty:'easy', q:{ar:'كم لاعب احتياطي يمكن تسجيله في بروتوكول المباراة عادةً؟ (تختلف المسابقات)', en:'How many substitutes are typically named in a matchday squad?'}, options:[{ar:'3',en:'3'},{ar:'5',en:'5'},{ar:'7',en:'7'},{ar:'12',en:'12'}], correct:3},
-  {id:6,difficulty:'easy', q:{ar:'ما اسم أكبر بطولة للأندية في أوروبا؟', en:'What is the biggest club competition in Europe?'}, options:[{ar:'الدوري الأوروبي',en:'Europa League'},{ar:'دوري أبطال أوروبا',en:'UEFA Champions League'},{ar:'كأس الاتحاد الأوروبي',en:'European Cup'},{ar:'كأس السوبر الأوروبي',en:'UEFA Super Cup'}], correct:1},
-  {id:7,difficulty:'easy', q:{ar:'ما هو الهدف من الركلة الرمية؟', en:'What is a throw-in used for?'}, options:[{ar:'منح فريق فرصة تسجيل مباشر',en:'To take a free kick'},{ar:'استئناف اللعب بعد خروج الكرة من الملعب',en:'To restart play after the ball goes out'},{ar:'إعطاء المهاجم ركلة جزاء',en:'To award a penalty'},{ar:'تحديد خط التماس',en:'To mark the touchline'}], correct:1},
-  {id:8,difficulty:'easy', q:{ar:'متى يحصل الفريق على ركلة ركنية؟', en:'When is a corner kick awarded?'}, options:[{ar:'عندما يخرج المدافع الكرة من المرمى',en:'When a defender clears the ball over the goal line'},{ar:'عندما يلمس اللاعب اليد داخل الملعب',en:'When a player handles inside the box'},{ar:'عندما يخرج المهاجم الكرة من الملعب',en:'When an attacker kicks it out'},{ar:'عندما يتعطل الحكم',en:'When the referee stops play'}], correct:0},
-  {id:9,difficulty:'easy', q:{ar:'كم عدد حكام الخطوط عادةً في المباريات الاحترافية؟', en:'How many assistant referees (linesmen) are usually present?'}, options:[{ar:'1',en:'1'},{ar:'2',en:'2'},{ar:'3',en:'3'},{ar:'4',en:'4'}], correct:1},
-  {id:10,difficulty:'easy', q:{ar:'ما اسم التسلل بالإنجليزية؟', en:'What is the offside called in English?'}, options:[{ar:'Offside',en:'Offside'},{ar:'Foul',en:'Foul'},{ar:'Corner',en:'Corner'},{ar:'Handball',en:'Handball'}], correct:0},
-  {id:11,difficulty:'medium', q:{ar:'أي دولة استضافت أول نسخة من كأس العالم؟', en:'Which country hosted the first World Cup?'}, options:[{ar:'إنجلترا',en:'England'},{ar:'البرازيل',en:'Brazil'},{ar:'أوروغواي',en:'Uruguay'},{ar:'الأرجنتين',en:'Argentina'}], correct:2},
-  {id:12,difficulty:'medium', q:{ar:'ما اسم التشكيلة 4-3-3؟', en:'What is a 4-3-3 formation typically used for?'}, options:[{ar:'توازن دفاعي',en:'Defensive balance'},{ar:'هجوم أوسع',en:'Wider attack'},{ar:'خط وسط ضيق',en:'Narrow midfield'},{ar:'حراسة مرمى ثلاثية',en:'Three goalkeepers'}], correct:1},
-  {id:13,difficulty:'medium', q:{ar:'ما المصطلح الإنجليزي للمهاجم المتراجع الذي يصنع اللعب؟', en:'What is the English term for a withdrawn forward who creates chances?'}, options:[{ar:'Striker',en:'Striker'},{ar:'Winger',en:'Winger'},{ar:'False nine',en:'False nine'},{ar:'Fullback',en:'Fullback'}], correct:2},
-  {id:14,difficulty:'medium', q:{ar:'أي دولة فازت بكأس أمم أوروبا 2016؟', en:'Which country won UEFA Euro 2016?'}, options:[{ar:'إسبانيا',en:'Spain'},{ar:'ألمانيا',en:'Germany'},{ar:'البرتغال',en:'Portugal'},{ar:'فرنسا',en:'France'}], correct:2},
-  {id:15,difficulty:'medium', q:{ar:'ما اسم الحارس الذي يُسمى "الكلب الضال" في بعض وسائل الإعلام؟', en:'Which famous goalkeeper was nicknamed "The Dog" in media? (ambiguous question—pick general answer)',en:'This is a placeholder—choose a goalkeeper name'}, options:[{ar:'ليفياتش',en:'Lievich'},{ar:'حارس مشهور',en:'Famous keeper'},{ar:'هذا سؤال عام',en:'Generic option'},{ar:'ليس محدد',en:'Not specific'}], correct:3},
-  {id:16,difficulty:'medium', q:{ar:'ما هي وظيفة الوسط المدافع؟', en:'What is the role of a defensive midfielder?'}, options:[{ar:'تسجيل الأهداف',en:'Score goals'},{ar:'حماية خط الدفاع وقطع الهجمات',en:'Shield the defense and break up attacks'},{ar:'التسديد من بعيد',en:'Shoot from distance'},{ar:'الحراسة المزدوجة',en:'Double-guarding'}], correct:1},
-  {id:17,difficulty:'medium', q:{ar:'ما المقصود بـ VAR؟', en:'What does VAR stand for?'}, options:[{ar:'Video Assistant Referee',en:'Video Assistant Referee'},{ar:'Video Action Replay',en:'Video Action Replay'},{ar:'Virtual Assistant Ref',en:'Virtual Assistant Ref'},{ar:'Video and Replay',en:'Video and Replay'}], correct:0},
-  {id:18,difficulty:'medium', q:{ar:'ما اسم بطولة الأندية في العالم التي تجمع أبطال القارات؟', en:'What is the club world championship called?'}, options:[{ar:'كأس العالم للأندية',en:'FIFA Club World Cup'},{ar:'كأس الكونكاكاف',en:'CONCACAF Cup'},{ar:'دوري الأبطال',en:'Champions League'},{ar:'كأس السوبر',en:'Super Cup'}], correct:0},
-  {id:19,difficulty:'medium', q:{ar:'ما المقصود بـ "هاتريك"؟', en:'What does "hat-trick" mean?'}, options:[{ar:'ثلاث تمريرات',en:'Three assists'},{ar:'ثلاث بطاقات',en:'Three cards'},{ar:'ثلاثة أهداف من لاعب واحد',en:'Three goals by one player'},{ar:'ثلاثة تدخلات دفاعية',en:'Three defensive actions'}], correct:2},
-  {id:20,difficulty:'medium', q:{ar:'من يُعتبر عادةً أفضل هدّاف في كرة القدم الحديثة، مشتركا بين الأسماء الشهيرة؟', en:'Which players are commonly mentioned among modern top scorers?'}, options:[{ar:'ميسي ورونالدو',en:'Messi & Ronaldo'},{ar:'بكهام وزيدان',en:'Beckham & Zidane'},{ar:'بلاتيني ومارادونا',en:'Platini & Maradona'},{ar:'زيدان وشيفتشينكو',en:'Zidane & Shevchenko'}], correct:0},
-  {id:21,difficulty:'hard', q:{ar:'ما هو أقصر زمن تم خلاله تسجيل هدف من بداية المباراة (تقريبياً)؟', en:'What is one of the fastest goals scored from kick-off (approximately)?'}, options:[{ar:'أقل من 3 ثوانٍ',en:'Under 3 seconds'},{ar:'أقل من 10 ثوان',en:'Under 10 seconds'},{ar:'أقل من دقيقة',en:'Under a minute'},{ar:'بعد عدة دقائق',en:'After several minutes'}], correct:1},
-  {id:22,difficulty:'hard', q:{ar:'ما المقصود بـ "تسلل" بالضبط في قانون اللعبة؟', en:'What exactly constitutes offside in the Laws of the Game?'}, options:[{ar:'أن يكون لاعب أمام آخر المدافع عند التسديد',en:'Being ahead of last defender when ball is played'},{ar:'التدخل في اللعب مع تأثير على المنافس',en:'Interfering with play or opponent'},{ar:'التواجد في نصف ملعب الخصم',en:'Being in opponent half'},{ar:'الوقوف بالقرب من المرمى',en:'Standing near goal'}], correct:1},
-  {id:23,difficulty:'hard', q:{ar:'أي لاعب ارتدى القميص رقم 7 واشتهر بمهاراته في ريال مدريد؟', en:'Which famous No.7 was known for skills at Real Madrid?'}, options:[{ar:'كريستيانو رونالدو',en:'Cristiano Ronaldo'},{ar:'راؤول',en:'Raul'},{ar:'دي ماريا',en:'Di Maria'},{ar:'هيغواين',en:'Higuain'}], correct:0},
-  {id:24,difficulty:'hard', q:{ar:'أي نادي الإسباني يحمل لقب الأكثر فوزاً بالدوري؟', en:'Which Spanish club has historically the most league titles?'}, options:[{ar:'ريال مدريد',en:'Real Madrid'},{ar:'برشلونة',en:'Barcelona'},{ar:'أتلتيكو مدريد',en:'Atletico Madrid'},{ar:'فالنسيا',en:'Valencia'}], correct:0},
-  {id:25,difficulty:'hard', q:{ar:'ما هو دور اللاعب "بلاعب الرقم 6" في التشكيلة التكتيكية؟', en:'What is the typical role of a number 6 in tactics?'}, options:[{ar:'صانع ألعاب متقدم',en:'Advanced playmaker'},{ar:'قلب دفاع',en:'Central defender'},{ar:'وسط مدافع/قاطع هجمات',en:'Defensive midfielder/ball-winner'},{ar:'جناح هجومي',en:'Attacking winger'}], correct:2},
-  {id:26,difficulty:'easy', q:{ar:'ما اسم كرة القدم ذات الحقل الذي يسمح باللمس والتمرير فقط بالأقدام (مقارنة بكرة اليد)؟', en:'Which sport uses feet and allows kicking and passing with feet only (compared to handball)?'}, options:[{ar:'كرة السلة',en:'Basketball'},{ar:'كرة القدم',en:'Football'},{ar:'الهوكي',en:'Hockey'},{ar:'البيسبول',en:'Baseball'}], correct:1},
-  {id:27,difficulty:'easy', q:{ar:'ما هو لون بطاقة الإنذار؟', en:'What color is a yellow card?'}, options:[{ar:'أحمر',en:'Red'},{ar:'أصفر',en:'Yellow'},{ar:'أخضر',en:'Green'},{ar:'أزرق',en:'Blue'}], correct:1},
-  {id:28,difficulty:'easy', q:{ar:'ما هو المقصود بـ "خطأ" في كرة القدم؟', en:'What does a foul mean in football?'}, options:[{ar:'انتهاك لقواعد اللعبة يستدعي ركلة حرة',en:'Violation that leads to a free kick'},{ar:'هدف صحيح',en:'A valid goal'},{ar:'تبديل لاعب',en:'Substitution'},{ar:'استراحة بين الشوطين',en:'Half-time break'}], correct:0},
-  {id:29,difficulty:'medium', q:{ar:'كم عدد الاستبدالات المسموح بها في معظم المسابقات بعد 2020 (باستثناء حالات الاستثناء)?', en:'How many substitutions are generally allowed in most competitions after 2020 changes (excluding special rules)?'}, options:[{ar:'3',en:'3'},{ar:'5',en:'5'},{ar:'7',en:'7'},{ar:'1',en:'1'}], correct:1},
-  {id:30,difficulty:'medium', q:{ar:'ما اسم الجائزة الفردية لأفضل لاعب في العالم التي تمنحها مجلة فرانس فوتبول؟', en:'What is the Ballon d\'Or awarded for?'}, options:[{ar:'أفضل هدّاف',en:'Top scorer'},{ar:'أفضل فريق',en:'Best team'},{ar:'أفضل لاعب في العالم',en:'Best player in the world'},{ar:'أداء الجمهور',en:'Fan performance'}], correct:2},
-  {id:31,difficulty:'easy', q:{ar:'ما اسم لاعب الأرجنتين الشهير الذي فاز بجائزة الكرة الذهبية عدة مرات؟', en:'Which Argentinian player has won the Ballon d\'Or multiple times?'}, options:[{ar:'ليونيل ميسي',en:'Lionel Messi'},{ar:'دييغو مارادونا',en:'Diego Maradona'},{ar:'باولو ديبالا',en:'Paulo Dybala'},{ar:'سرخيو أغويرو',en:'Sergio Aguero'}], correct:0},
-  {id:32,difficulty:'easy', q:{ar:'أي من هذه التسميات لوصف الجناح؟', en:'Which of these describes a winger?'}, options:[{ar:'لاعب دفاع مركزي',en:'Central defender'},{ar:'لاعب على طرف الملعب يهاجم ويمرر',en:'Player on flank who attacks and crosses'},{ar:'حارس مرمى',en:'Goalkeeper'},{ar:'لاعب خط وسط دفاعي',en:'Defensive midfielder'}], correct:1},
-  {id:33,difficulty:'medium', q:{ar:'ما هي مهام الظهير الأيمن؟', en:'What are the duties of a right-back?'}, options:[{ar:'التقدم في الجناح وتغطية الدفاع',en:'Overlap on wing and provide defensive cover'},{ar:'بناء الهجمات من العمق فقط',en:'Only build attacks from deep'},{ar:'تسديد الركلات الحرة',en:'Take free kicks'},{ar:'لا واجبات دفاعية',en:'No defensive duties'}], correct:0},
-  {id:34,difficulty:'hard', q:{ar:'ما هي تقنية اللعب التي تعتمد على تبادل المراكز وحركة بلاكرة بين المهاجمين؟', en:'Which playing technique involves interchanging positions and fluid movement among forwards?'}, options:[{ar:'Tiki-taka',en:'Tiki-taka'},{ar:'Route One',en:'Route One'},{ar:'False nine movement',en:'False nine movement'},{ar:'Park the Bus',en:'Park the Bus'}], correct:2},
-  {id:35,difficulty:'hard', q:{ar:'أي مدرب معروف بأسلوبه الهجومي في برشلونة بين 2008-2012؟', en:'Which coach was famous for attacking style at Barcelona around 2008-2012?'}, options:[{ar:'بيب غوارديولا',en:'Pep Guardiola'},{ar:'خورخي سامباولي',en:'Jorge Sampaoli'},{ar:'جوس هيدينك',en:'Guus Hiddink'},{ar:'الكس فيرجسون',en:'Alex Ferguson'}], correct:0},
-  {id:36,difficulty:'medium', q:{ar:'ما اسم مباراة تُقام سنوياً بين بطل الدوري وبطل الكأس في بعض الدول؟', en:'What match is played between league winner and cup winner in some countries?'}, options:[{ar:'كأس السوبر',en:'Super Cup'},{ar:'نهائي الكأس',en:'Cup final'},{ar:'دوري الأبطال',en:'Champions League'},{ar:'كأس العالم',en:'World Cup'}], correct:0},
-  {id:37,difficulty:'easy', q:{ar:'ما المقصود بـ "ضربة جزاء"؟', en:'What is a penalty kick?'}, options:[{ar:'ركلة من داخل منطقة الجزاء تُمنح بسبب مخالفة',en:'A kick from the penalty spot awarded for a foul'},{ar:'ركلة ركنية',en:'Corner kick'},{ar:'ركلة بداية الشوط',en:'Kick-off'},{ar:'ركلة حرة غير مباشرة',en:'Indirect free kick'}], correct:0},
-  {id:38,difficulty:'medium', q:{ar:'ما هو نظام احتساب الأهلية في دور خروج المهزوم (مثل نصف النهائي)؟', en:'What is the away goals rule in two-legged ties (historical)?'}, options:[{ar:'يساوي الأهداف خارج الديار أعلى قيمة',en:'Away goals count as tie-breaker'},{ar:'لا يوجد أهمية لأهداف خارج الديار',en:'Away goals irrelevant'},{ar:'يُحتسب فقط في الشوط الأول',en:'Only counted in first half'},{ar:'يمنح بطاقة صفراء لأهداف معينة',en:'Gives yellow card for certain goals'}], correct:0},
-  {id:39,difficulty:'hard', q:{ar:'ما هي وظيفة الحكم الرابع؟', en:'What is the role of the fourth official?'}, options:[{ar:'إدارة تبديلات وكمادات الوقت والتواصل',en:'Manage substitutions, added time and communication'},{ar:'رمي القرارات النهائية',en:'Make final decisions'},{ar:'تسجيل الأهداف',en:'Record goals'},{ar:'الحكم على الركلات الترجيحية فقط',en:'Referee penalty shootouts only'}], correct:0},
-  {id:40,difficulty:'medium', q:{ar:'ما معنى "Clean Sheet" لحارس المرمى؟', en:'What does a goalkeeper's "clean sheet" mean?'}, options:[{ar:'يسجل هدفًا واحدًا',en:'Concede one goal'},{ar:'لا يستقبل أي هدف',en:'Concede no goals'},{ar:'يحصل على بطاقة صفراء',en:'Receive a yellow card'},{ar:'يطرد من المباراة',en:'Sent off'}], correct:1},
-  {id:41,difficulty:'easy', q:{ar:'ما الذي يحدث عندما تُسجل هدفاً من تسديدة مباشرة خارج الملعب؟', en:'What happens when a goal is scored from a direct free kick outside the box?'}, options:[{ar:'الهدف صحيح',en:'Goal stands'},{ar:'الهدف ملغي دائمًا',en:'Always disallowed'},{ar:'يمنح ضربة جزاء',en:'Penalty awarded'},{ar:'يتم إعادته من ركلة مرمى',en:'Restart with goal kick'}], correct:0},
-  {id:42,difficulty:'medium', q:{ar:'ما الذي يمنح اللاعب بطاقة حمراء مباشرة؟', en:'What can lead to a straight red card?'}, options:[{ar:'إساءة لفظية فقط',en:'Only verbal abuse'},{ar:'الاعتداء أو عنف شديد',en:'Violent conduct or serious foul play'},{ar:'تأخير بدء اللعب',en:'Delaying the restart'},{ar:'ارتداء حذاء غير مناسب',en:'Wearing wrong boots'}], correct:1},
-  {id:43,difficulty:'hard', q:{ar:'ما تسمية التمريرة الطويلة التي تغير محور الهجمة بسرعة؟', en:'What is the long pass that quickly switches the attack called?'}, options:[{ar:'Through ball',en:'Through ball'},{ar:'Switch of play',en:'Switch of play'},{ar:'Nutmeg',en:'Nutmeg'},{ar:'Volley',en:'Volley'}], correct:1},
-  {id:44,difficulty:'hard', q:{ar:'من هو المدرب الذي فاز بدوري الأبطال مع ثلاثية مختلفة؟', en:'Which coach won the Champions League with multiple teams? (historical examples)'}, options:[{ar:'كارلو أنشيلوتي',en:'Carlo Ancelotti'},{ar:'جوزيه مورينيو',en:'Jose Mourinho'},{ar:'بيب غوارديولا',en:'Pep Guardiola'},{ar:'أرسين فينجر',en:'Arsene Wenger'}], correct:0},
-  {id:45,difficulty:'medium', q:{ar:'ما المقصود بـ "Nutmeg" في كرة القدم؟', en:'What does "nutmeg" mean in football?'}, options:[{ar:'مراوغة بوضع الكرة بين قدمي الخصم',en:'Passing the ball between opponent\'s legs'},{ar:'ركلة مقصودة نحو الجمهور',en:'Kick directed to stands'},{ar:'ركلة مقصية',en:'Bicycle kick'},{ar:'خطأ دفاعي',en:'Defensive mistake'}], correct:0},
-  {id:46,difficulty:'easy', q:{ar:'ما لون القميص التقليدي لمنتخب البرازيل؟', en:'What is Brazil\'s traditional home shirt color?'}, options:[{ar:'أزرق',en:'Blue'},{ar:'أصفر',en:'Yellow'},{ar:'أبيض',en:'White'},{ar:'أخضر',en:'Green'}], correct:1},
-  {id:47,difficulty:'easy', q:{ar:'ما اسم الجهاز الذي يظهر إعادة الفيديو للحكم في الملاعب؟', en:'What system provides video replays for referees in stadiums?'}, options:[{ar:'VAR',en:'VAR'},{ar:'GPS',en:'GPS'},{ar:'Hawk-Eye',en:'Hawk-Eye'},{ar:'Goal-line only',en:'Goal-line only'}], correct:0},
-  {id:48,difficulty:'medium', q:{ar:'ما الذي يحدد في أغلب الأحيان "أفضل لاعب في المباراة"؟', en:'What usually determines the Man of the Match?'}, options:[{ar:'أداء اللاعب وتأثيره على النتيجة',en:'Player\'s performance and impact'},{ar:'عدد المتابعين',en:'Number of followers'},{ar:'القرعة',en:'Random draw'},{ar:'رتبته في الفريق',en:'Team rank'}], correct:0},
-  {id:49,difficulty:'hard', q:{ar:'ما هي ميزة استخدام خط وسط ثلاثي؟', en:'What advantage does a three-man midfield provide?'}, options:[{ar:'ثبات دفاعي أكبر وتناسق في التمرير',en:'More defensive solidity and passing control'},{ar:'زيادة الجناحين فقط',en:'Only wider wings'},{ar:'إلغاء خط الهجوم',en:'Remove the attack line'},{ar:'حفظ الوقت',en:'Save time'}], correct:0},
-  {id:50,difficulty:'easy', q:{ar:'ما اسم اللاعب الذي يُعرف بلقبه CR7؟', en:'Which player is known as CR7?'}, options:[{ar:'ليونيل ميسي',en:'Lionel Messi'},{ar:'كريستيانو رونالدو',en:'Cristiano Ronaldo'},{ar:'نيمار',en:'Neymar'},{ar:'لويس سواريز',en:'Luis Suarez'}], correct:1},
-  {id:51,difficulty:'medium', q:{ar:'ما الذي يحدث إذا طُرد لاعب قبل الشوط الأول في مباراة رسمية؟',en:'What happens if a player is sent off before the first half in an official match?'}, options:[{ar:'لا يسمح بالفريق باستبداله ويكمل بعشرة',en:'Team cannot replace and plays with ten'},{ar:'يستبدل مباشرة بلاعب آخر',en:'Replaced immediately'},{ar:'تُعاد المباراة',en:'Match replayed'},{ar:'تحسب نتيجة لصالح الخصم',en:'Result awarded to opponent'}], correct:0},
-  {id:52,difficulty:'hard', q:{ar:'ما هو مصطلح "Park the bus"؟',en:'What does "Park the bus" mean?'}, options:[{ar:'فتح اللعب هجوميًا',en:'Play very offensively'},{ar:'التراجع الدفاعي وحشد المدافعين قرب المرمى',en:'Defensive deep block with many defenders'},{ar:'نظام تدريب خاص',en:'Special training system'},{ar:'طريقة تسديد الركلات الحرة',en:'Free-kick technique'}], correct:1},
-  {id:53,difficulty:'medium', q:{ar:'ما أهمية زمن بدل الضائع؟',en:'Why is stoppage time added?'}, options:[{ar:'تعويض الوقت المفقود بسبب التوقفات',en:'To compensate lost time due to stoppages'},{ar:'لإطالة المباراة فقط',en:'To lengthen game for spectacle'},{ar:'لتغيير النتيجة',en:'To determine winner randomly'},{ar:'لا سبب واضح',en:'No clear reason'}], correct:0},
-  {id:54,difficulty:'easy', q:{ar:'أي من هذه الحركات تُعتبر مهارة فردية؟',en:'Which of these is considered an individual skill?'}, options:[{ar:'تمرير قصير',en:'Short pass'},{ar:'مراوغة لاعب',en:'Dribbling past a player'},{ar:'تشكيل دفاعي',en:'Defensive shape'},{ar:'التبديل الجماعي',en:'Collective substitution'}], correct:1},
-  {id:55,difficulty:'medium', q:{ar:'ما معنى "Set piece"؟',en:'What does "set piece" mean?'}, options:[{ar:'لعبة منظمة من ركنية أو ركلة حرة',en:'Organized play from corner or free-kick'},{ar:'تبديل اللاعبين',en:'Player substitution'},{ar:'ركلة مرمى',en:'Goal kick'},{ar:'مراوغة',en:'Dribble'}], correct:0},
-  {id:56,difficulty:'hard', q:{ar:'ما هي ميزة استخدام الحارس لعب القدمين (sweeper-keeper)؟',en:'What is benefit of a sweeper-keeper who plays with feet?'}, options:[{ar:'يساعد في بناء اللعب من الخلف ومواجهة الهجمات المرتدة',en:'Helps build play and handle counter-attacks'},{ar:'يمنع التمريرات القصيرة',en:'Prevents short passes'},{ar:'يزيد الطول البدني للفريق',en:'Increases team height'},{ar:'يحسن ركلات الجزاء',en:'Improves penalties'}], correct:0},
-  {id:57,difficulty:'easy', q:{ar:'ما هي اسم ركلة البداية؟',en:'What is the kick at the start of play called?'}, options:[{ar:'Kick-off',en:'Kick-off'},{ar:'Penalty',en:'Penalty'},{ar:'Corner',en:'Corner'},{ar:'Throw-in',en:'Throw-in'}], correct:0},
-  {id:58,difficulty:'easy', q:{ar:'ما المقصود بـ "Assist"؟',en:'What is an assist?'}, options:[{ar:'الركلة الحرة',en:'Free kick'},{ar:'التمرير الذي يؤدي مباشرةً إلى هدف',en:'Pass leading directly to a goal'},{ar:'الخطأ الذي يؤدي لهدف',en:'Foul leading to goal'},{ar:'التبديل الذي يغير نتيجة المباراة',en:'Substitution changing match'}], correct:1},
-  {id:59,difficulty:'medium', q:{ar:'ما الهدف من خطة "pressing"؟',en:'What is the aim of pressing tactic?'}, options:[{ar:'زيادة الاستحواذ باعتماد التمريرات الطويلة',en:'Increase possession via long passes'},{ar:'فرض ضغط على حامل الكرة لانتزاع الكرة بسرعة',en:'Apply pressure to win ball back quickly'},{ar:'حماية المرمى فقط',en:'Only protect the goal'},{ar:'التراجع إلى مناطق الدفاع',en:'Retreat to defensive areas'}], correct:1},
-  {id:60,difficulty:'hard', q:{ar:'في ركلات الترجيح، ما الذي يحدث عند تعادل بعد خمس تسديدات لكل فريق؟',en:'In a penalty shootout, what happens if tied after five kicks each?'}, options:[{ar:'ينتهي بالتعادل',en:'Ends as draw'},{ar:'تسدد ركلات إضافية بالتناوب حتى يكسر التعادل',en:'Sudden death kicks until one leads'},{ar:'تعاد المباراة',en:'Match replayed'},{ar:'فوز الفريق صاحب أفضل أداء في البطولة',en:'Team with better tournament form wins'}], correct:1}
-];
-
-// --------- إعدادات ابتدائية ---------
-function init(){
-  // load best
-  const best = storage.settings.best || 0; bestEl.textContent = best;
-  // set total display
-  totalEl.textContent = QUESTIONS.length;
-  document.getElementById('total').textContent = QUESTIONS.length;
-
-  // bind UI events
-  hintBtn.addEventListener('click', useHint);
-  nextBtn.addEventListener('click', nextManual);
-  restartBtn.addEventListener('click', restartGame);
-  downloadBtn.addEventListener('click', downloadHTML);
-  langArBtn.addEventListener('click', () => setLanguage('ar'));
-  langEnBtn.addEventListener('click', () => setLanguage('en'));
-  modeSelect.addEventListener('change', e=>{ mode = e.target.value; });
-  difficultySelect.addEventListener('change', e=>{ difficultyFilter = e.target.value; rebuildPool(); });
-  pauseBtn.addEventListener('click', togglePause);
-  importBtn.addEventListener('click', importJSON);
-
-  // load stats
-  renderStats();
-
-  // prepare pool & start
-  rebuildPool();
-  startGame();
-}
-
-// --------- فلترة وبناء Pool ---------
-function rebuildPool(){
-  pool = QUESTIONS.filter(q => (difficultyFilter==='all' || q.difficulty===difficultyFilter));
-  shuffle(pool);
-  totalEl.textContent = pool.length;
-  current = 0;
-}
-
-// --------- دوال مساعدة ---------
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
-function setLanguage(l){ language = l; document.documentElement.lang = (l==='ar'?'ar':'en'); renderStaticText(); renderQuestion(); }
-function renderStaticText(){ if(language==='ar'){ document.getElementById('appTitle').textContent='دوري أبطال الأسئلة'; document.getElementById('appSubtitle').textContent='موسم الأسئلة — تحدى أصدقائك وطور مهاراتك'; document.getElementById('labelQuestion').textContent='السؤال'; document.getElementById('labelScore').textContent='النقاط'; document.getElementById('labelBest').textContent='أفضل'; document.getElementById('labelStage').textContent='المرحلة'; } else { document.getElementById('appTitle').textContent='Quiz Champions League'; document.getElementById('appSubtitle').textContent='Quiz season — challenge friends and improve'; document.getElementById('labelQuestion').textContent='Question'; document.getElementById('labelScore').textContent='Score'; document.getElementById('labelBest').textContent='Best'; document.getElementById('labelStage').textContent='Stage'; } }
-
-function formatQ(q){ return q.q[language] || q.q.ar; }
-function formatOpt(opt){ return opt[language] || opt.ar; }
-
-// --------- عرض السؤال ---------
-function renderQuestion(){
-  if(!pool.length){ questionEl.textContent = language==='ar' ? 'لا توجد أسئلة' : 'No questions'; optionsEl.innerHTML=''; return; }
-  const q = pool[current];
-  currentEl.textContent = current+1;
-  document.getElementById('total').textContent = pool.length;
-  questionEl.textContent = formatQ(q);
-  // render options
-  optionsEl.innerHTML = '';
-  q.options.forEach((opt,i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option p-3 rounded bg-white/5 text-right w-full text-sm';
-    btn.innerHTML = `<div>${formatOpt(opt)}</div>`;
-    btn.dataset.idx = i;
-    btn.addEventListener('click', ()=>handleAnswer(btn,i));
-    optionsEl.appendChild(btn);
-  });
-  // reset
-  usedHintThisQuestion = false;
-  nextBtn.disabled = true;
-  // timer
-  startTimer();
-  updateProgress();
-}
-
-// --------- المؤقت ---------
-function startTimer(){ clearInterval(timer); timeLeft = (mode==='training'? Math.max(30,TIME_PER_QUESTION*2):TIME_PER_QUESTION); timerText.textContent = timeLeft; timerFill.style.width = '100%'; const step = 100 / timeLeft; timer = setInterval(()=>{ timeLeft--; if(timeLeft<0){ clearInterval(timer); onTimeUp(); return; } timerText.textContent = timeLeft; timerFill.style.width = (timeLeft*step) + '%'; },1000); }
-function stopTimer(){ clearInterval(timer); timer=null; }
-let paused = false;
-function togglePause(){ if(paused){ startTimer(); pauseBtn.textContent = language==='ar'? 'إيقاف/استئناف':'Pause/Resume'; paused=false; } else { stopTimer(); pauseBtn.textContent = language==='ar'? 'استئناف':'Resume'; paused=true; } }
-
-// --------- الإجابة ---------
-function handleAnswer(btn, idx){ if(btn.disabled) return; stopTimer(); const q = pool[current]; const buttons = Array.from(optionsEl.children);
-  // disable
-  buttons.forEach(b=>{ b.disabled=true; b.classList.add('disabled'); });
-  // check
-  if(idx===q.correct){ btn.classList.add('correct'); correctSound(); const pts = POINTS[q.difficulty] || POINTS['medium']; score += pts; scoreEl.textContent = score; streak += 1; bestStreakSession = Math.max(bestStreakSession, streak); streakEl.textContent = streak; // reward badges
-    if(score> (storage.settings.best||0)){ storage.settings.best = score; bestEl.textContent = score; saveStorage(storage); }
-  } else {
-    // mark selected wrong and correct
-    btn.classList.add('wrong'); const correctBtn = buttons.find(b => Number(b.dataset.idx)===q.correct); if(correctBtn) correctBtn.classList.add('correct'); wrongSound(); lives--; if(lives<0) lives=0; updateLives(); streak = 0; streakEl.textContent = streak;
-  }
-  // mark others disabled
-  nextBtn.disabled = false;
-  // after short delay go next or end
-  setTimeout(()=>{ current++; if(lives<=0){ endGame(language==='ar'? 'خسرت كل القلوب!': 'You lost all lives!'); return; } if(current>=pool.length){ endGame(language==='ar'? 'انتهت الأسئلة!': 'Finished all questions!'); } else { renderQuestion(); } }, AUTO_NEXT_DELAY);
-}
-
-function onTimeUp(){ const buttons = Array.from(optionsEl.children); buttons.forEach(b=>{ const bi = Number(b.dataset.idx); if(bi===pool[current].correct) b.classList.add('correct'); else b.classList.add('wrong'); b.disabled=true; b.classList.add('disabled'); }); wrongSound(); lives--; updateLives(); streak = 0; streakEl.textContent = streak; nextBtn.disabled = false; setTimeout(()=>{ current++; if(lives<=0){ endGame(language==='ar'? 'خسرت كل القلوب!': 'You lost all lives!'); return; } if(current>=pool.length){ endGame(language==='ar'? 'انتهت الأسئلة!': 'Finished all questions!'); } else renderQuestion(); }, AUTO_NEXT_DELAY); }
-
-function updateLives(){ livesEl.innerHTML = '❤️'.repeat(lives) + '<span class="text-white/30">' + '❤️'.repeat(Math.max(0, START_LIVES - lives)) + '</span>'; }
-
-function updateProgress(){ const pct = Math.round(((current) / pool.length) * 100); progressBar.style.width = pct + '%'; stageEl.textContent = getStage(current); }
-function getStage(index){ const n = index+1; if(n<=Math.ceil(pool.length*0.2)) return language==='ar'?'دور المجموعات':'Group Stage'; if(n<=Math.ceil(pool.length*0.4)) return language==='ar'?'دور الـ16':'Round of 16'; if(n<=Math.ceil(pool.length*0.6)) return language==='ar'?'ربع النهائي':'Quarter-finals'; if(n<=Math.ceil(pool.length*0.8)) return language==='ar'?'نصف النهائي':'Semi-finals'; return language==='ar'?'النهائي':'Final'; }
-
-// --------- تلميح 50/50 ---------
-function useHint(){ if(usedHintThisQuestion) return; const q = pool[current]; const buttons = Array.from(optionsEl.children);
-  // choose two wrong options to remove
-  const wrongIdx = buttons.map(b=>Number(b.dataset.idx)).filter(i=>i!==q.correct);
-  shuffle(wrongIdx);
-  const toRemove = wrongIdx.slice(0, Math.min(2, wrongIdx.length));
-  toRemove.forEach(idx=>{ const b = buttons.find(bb=>Number(bb.dataset.idx)===idx); if(b){ b.classList.add('disabled'); b.disabled=true; b.style.opacity='0.5'; } });
-  usedHintThisQuestion = true;
-  // penalty in challenge mode
-  if(mode==='challenge') score = Math.max(0, score - 2);
-  scoreEl.textContent = score;
-}
-
-// --------- نهاية اللعبة ---------
-function endGame(message){ stopTimer(); resultArea.textContent = message + ' ' + (language==='ar' ? 'مجموع نقاطك:' : 'Your score:') + ' ' + score; nextBtn.disabled = true; // save stats
-  saveSession(); renderStats(); // badges
-  renderBadges(); }
-
-function saveSession(){ storage.stats.completed = (storage.stats.completed||0) + 1; storage.stats.games = storage.stats.games || []; storage.stats.games.push({score,streak:bestStreakSession,date:new Date().toISOString()}); // compute avg
-  const totalScore = storage.stats.games.reduce((s,g)=>s+g.score,0);
-  storage.stats.avgScore = Math.round(totalScore / storage.stats.games.length);
-  storage.stats.bestStreak = Math.max(storage.stats.bestStreak||0, bestStreakSession);
-  // best
-  storage.settings.best = Math.max(storage.settings.best||0, score);
-  saveStorage(storage);
-}
-
-function renderStats(){ statsCompletedEl.textContent = storage.stats.completed || 0; statsAvgEl.textContent = storage.stats.avgScore || 0; statsBestStreakEl.textContent = storage.stats.bestStreak || 0; bestEl.textContent = storage.settings.best || 0; renderBadges(); }
-
-function renderBadges(){ badgesEl.innerHTML = ''; const badges = [];
-  if(storage.stats.completed>=1) badges.push({k:'starter',t: language==='ar'?'لاعب مبتدئ':'Starter'});
-  if(score>=100) badges.push({k:'century',t: language==='ar'?'المائة':'Centurion'});
-  if(storage.stats.bestStreak>=5) badges.push({k:'streak5',t: language==='ar'?'سلسلة 5':'5 Streak'});
-  if(storage.stats.bestStreak>=10) badges.push({k:'streak10',t: language==='ar'?'سلسلة 10':'10 Streak'});
-  badges.forEach(b=>{ const el = document.createElement('div'); el.className='badge text-xs'; el.textContent = b.t; badgesEl.appendChild(el); });
-}
-
-// --------- أزرار تحكم إضافية ---------
-function nextManual(){ if(current < pool.length-1){ current++; renderQuestion(); } else { endGame(language==='ar'?'انتهت الأسئلة!':'Finished!'); } }
-
-function restartGame(){ // reset
-  shuffle(QUESTIONS); rebuildPool(); current=0; score=0; lives=START_LIVES; streak=0; bestStreakSession=0; scoreEl.textContent = score; updateLives(); renderQuestion(); resultArea.textContent=''; }
-
-// --------- تنزيل HTML (نسخة الصفحة الحالية) ---------
-function downloadHTML(){ try{ const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'football-quiz-enhanced.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }catch(e){ alert('فشل إنشاء الملف'); } }
-
-// --------- استيراد JSON (الأسئلة) ---------
-function importJSON(){ const input = document.createElement('input'); input.type='file'; input.accept='application/json'; input.addEventListener('change', async (e)=>{
-    const file = e.target.files[0]; if(!file) return; const txt = await file.text(); try{ const data = JSON.parse(txt); if(Array.isArray(data)){ QUESTIONS = data.map((q,i)=>({id: q.id||i+1, difficulty:q.difficulty||'medium', q:q.q, options:q.options, correct:q.correct})); rebuildPool(); restartGame(); alert(language==='ar'? 'تم استيراد الأسئلة':'Questions imported'); } else alert('JSON invalid'); }catch(err){ alert('ملف غير صالح'); }
-  }); input.click(); }
-
-// --------- حفظ تلقائي للتقدم ---------
-window.addEventListener('beforeunload', ()=>{
-  const session = { current, score, lives, streak, poolIds: pool.map(p=>p.id), timestamp: new Date().toISOString() };
-  storage.session = session; saveStorage(storage);
-});
-
-// --------- تحميل تقدم محفوظ (إن وُجد) ---------
-function resumeIfAvailable(){ if(storage.session && storage.session.poolIds){ const ids = storage.session.poolIds; // rebuild pool in same order
-  const mapping = QUESTIONS.reduce((m,q)=>{ m[q.id]=q; return m; },{});
-  pool = ids.map(id=>mapping[id]).filter(Boolean);
-  if(pool.length){ current = Math.min(storage.session.current || 0, pool.length-1); score = storage.session.score||0; lives = storage.session.lives||START_LIVES; streak = storage.session.streak||0; scoreEl.textContent = score; updateLives(); renderQuestion(); return true; }
- } return false; }
-
-// --------- مساعدة عامة ---------
-function shuffleInPlace(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } }
-
-// --------- دوال صغيرة ---------
-function saveStorageWrapper(){ saveStorage(storage); }
-
-// --------- بدء اللعبة ---------
-function startGame(){ // try resume
-  if(!resumeIfAvailable()){ rebuildPool(); current=0; score=0; lives=START_LIVES; updateLives(); renderQuestion(); }
-}
-
-// --------- تهيئة الواجهة أولاً ثم بدء ========
-init();
-renderStaticText();
-
-</script></body>
-  </html>
+    <script src="script.js"></script>
+</body>
+</html>
