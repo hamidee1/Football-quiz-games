@@ -1,0 +1,201 @@
+/* style.css (Updated for Game Stages) */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    text-align: center;
+}
+
+.app {
+    width: 100%;
+    max-width: 800px;
+}
+
+.screen {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.screen.hide {
+    display: none;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.screen p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.control-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    font-family: 'Cairo', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.control-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+#quiz-screen {
+    padding: 30px;
+}
+
+.quiz-header {
+    margin-bottom: 20px;
+}
+
+#level-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4caf50;
+    margin-bottom: 15px;
+}
+
+#timer-container {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    margin: 0 auto 20px auto;
+}
+
+.timer-label {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+.timer-svg {
+    transform: scaleX(-1);
+}
+
+.timer-circle { fill: none; stroke: none; }
+.timer-background { stroke-width: 8px; stroke: rgba(255, 255, 255, 0.2); }
+.timer-path-remaining {
+    stroke-width: 8px;
+    stroke-linecap: round;
+    transform: rotate(90deg);
+    transform-origin: center;
+    transition: 1s linear all;
+    stroke: #28a745;
+}
+.timer-path-remaining.warning { stroke: #dc3545; }
+
+#question {
+    font-size: 1.8rem;
+    margin-top: 10px;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+    min-height: 100px;
+}
+
+#progress-container {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    height: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #4caf50;
+    transition: width 0.4s ease-in-out;
+}
+
+#question-counter {
+    font-size: 1rem;
+    color: #ddd;
+    margin-bottom: 10px;
+}
+
+.btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    color: white;
+    font-size: 1.1rem;
+    font-family: 'Cairo', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-align: right;
+}
+
+.btn:hover:not([disabled]) {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn.correct { background-color: #28a745; border-color: #28a745; }
+.btn.incorrect { background-color: #dc3545; border-color: #dc3545; }
+.btn:disabled { cursor: not-allowed; opacity: 0.7; }
+.btn.time-out-correct { animation: blink 1s linear infinite; }
+
+@keyframes blink { 50% { background-color: rgba(40, 167, 69, 0.5); } }
+
+#next-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 50%;
+    margin: 20px auto 0;
+    transition: background-color 0.3s;
+}
+#next-btn:hover { background-color: #0056b3; }
+
+@media (max-width: 600px) {
+    h1 { font-size: 2rem; }
+    .btn-grid { grid-template-columns: 1fr; }
+    #question { font-size: 1.5rem; }
+    .btn { font-size: 1rem; padding: 12px; }
+}
